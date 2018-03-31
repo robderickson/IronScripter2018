@@ -8,12 +8,14 @@ function Get-ISMonitorInfo {
         [string[]]$ComputerName = $env:COMPUTERNAME
     )
 
-    BEGIN {}
-
     PROCESS {
         foreach ($computer in $ComputerName) {
             try {
                 $ComputerInfo = Get-CimInstance -ComputerName $computer -ClassName Win32_ComputerSystem -ErrorAction Stop
+            } catch {
+                Write-Error "Unable to query Win32_ComputerSystem on computer $computer"
+            }
+            try {
                 $Monitors = Get-CimInstance -ComputerName $computer -ClassName wmiMonitorID -Namespace root\wmi -ErrorAction Stop
                 foreach ($monitor in $Monitors) {
                     $info = @{
@@ -29,11 +31,8 @@ function Get-ISMonitorInfo {
                     Write-Output $object
                 }
             } catch {
-                Write-Error "Unable to query WMI class on computer $computer. $($_.Exception.Message)"
-                Continue
+                Write-Error "Unable to query wmiMonitorID on computer $computer. $($_.Exception.Message)"
             }
         }
     }
-
-    END {}
 }
