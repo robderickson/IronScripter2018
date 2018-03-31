@@ -20,17 +20,16 @@ function Get-ISMonitorInfo {
             }
 
             try {
-                $Monitors = Get-CimInstance -ComputerName $computer -ClassName wmiMonitorID -Namespace root\wmi -ErrorAction Stop
-                
-                foreach ($monitor in $Monitors) {
+                Get-CimInstance -ComputerName $computer -ClassName wmiMonitorID -Namespace root\wmi -ErrorAction Stop |
+                ForEach-Object -Process {
                     $info = @{
                         ComputerName = $computer
                         ComputerType = $ComputerInfo.Model
                         MonitorType = ''
-                        MonitorSerial = [System.Text.Encoding]::ASCII.GetString($monitor.SerialNumberID)
+                        MonitorSerial = [System.Text.Encoding]::ASCII.GetString($_.SerialNumberID)
                     }
-                    if ($monitor.UserFriendlyName -ne $null) {
-                        $info.MonitorType = [System.Text.Encoding]::ASCII.GetString($monitor.UserFriendlyName)
+                    if ($_.UserFriendlyName -ne $null) {
+                        $info.MonitorType = [System.Text.Encoding]::ASCII.GetString($_.UserFriendlyName)
                     }
                 
                     $object = New-Object -TypeName PSObject -Property $info
