@@ -40,7 +40,7 @@ function Get-ISMonitorInfo {
                     Write-Debug -Message $info
                 }
             } catch {
-                Write-Error "Unable to query wmiMonitorID on computer $computer. $($_.Exception.Message)"
+                Write-Error "Unable to query wmiMonitorID on computer $computer.`n$($_.Exception.Message)"
             }
         }
     }
