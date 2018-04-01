@@ -20,8 +20,8 @@ function Get-ISComputerInfo {
             }
 
             try {
-                $DiskInfo = Get-CimInstance -ComputerName $computer -ClassName Win32_LogicalDisk -ErrorAction Stop
-                Foreach ($disk in $DiskInfo) {
+                Get-CimInstance -ComputerName $computer -ClassName Win32_LogicalDisk -ErrorAction Stop |
+                ForEach-Object -Process {
                     $properties = @{
                         OSName = $OSInfo.Caption
                         OSVersion = $OSInfo.Version
@@ -32,24 +32,24 @@ function Get-ISComputerInfo {
                         FreePhysicalMemory = $OSInfo.FreePhysicalMemory
                         TotalVirtualMemorySize = $OSInfo.TotalVirtualMemorySize
                         FreeVirtualMemory = $OSInfo.FreeVirtualMemory
-                        DeviceID = $disk.DeviceID
-                        Description = $disk.Description
-                        Size = $disk.Size
-                        FreeSpace = $disk.FreeSpace
+                        DeviceID = $_.DeviceID
+                        Description = $_.Description
+                        Size = $_.Size
+                        FreeSpace = $_.FreeSpace
                         PercentFree = ''
-                        Compressed = $disk.Compressed
+                        Compressed = $_.Compressed
+                        PSTypeName = 'ComputerInfo'
                     }
 
-                    if ($disk.Size -gt 0) {
-                        $properties.PercentFree = "{0:P0}" -f ($disk.FreeSpace / $disk.Size)
+                    if ($_.Size -gt 0) {
+                        $properties.PercentFree = "{0:P0}" -f ($_.FreeSpace / $_.Size)
                     }
 
                     Write-Verbose -Message "Retrieved disk data from Win32_LogicalDisk for computer $computer"
                     Write-Debug -Message $properties
 
                     $object = New-Object -TypeName PSObject -Property $properties
-                    $object.PSTypeNames.Insert(0,'Custom.ComputerInfo')
-
+                    
                     Write-Output $object
                 }
             } catch {
