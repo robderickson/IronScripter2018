@@ -16,28 +16,28 @@ function Get-ISMonitorInfo {
                 Write-Verbose -Message "Retrieved computer data from Win32_ComputerSystem for computer $computer."
                 Write-Debug -Message $computer
             } catch {
-                Write-Error -Message "Unable to query Win32_ComputerSystem on computer $computer.`n($_.Exception.Message)"
+                Write-Error -Message "Unable to query Win32_ComputerSystem on computer $computer.`n$($_.Exception.Message)"
             }
 
             try {
                 Get-CimInstance -ComputerName $computer -ClassName wmiMonitorID -Namespace root\wmi -ErrorAction Stop |
                 ForEach-Object -Process {
-                    $info = @{
+                    $properties = @{
                         ComputerName = $computer
                         ComputerType = $ComputerInfo.Model
                         MonitorType = ''
                         MonitorSerial = [System.Text.Encoding]::ASCII.GetString($_.SerialNumberID)
                     }
                     if ($_.UserFriendlyName -ne $null) {
-                        $info.MonitorType = [System.Text.Encoding]::ASCII.GetString($_.UserFriendlyName)
+                        properties.MonitorType = [System.Text.Encoding]::ASCII.GetString($_.UserFriendlyName)
                     }
-                
-                    $object = New-Object -TypeName PSObject -Property $info
-                
-                    Write-Output $object
 
                     Write-Verbose -Message "Retrieved monitor data from wmiMonitorID for computer $computer."
-                    Write-Debug -Message $info
+                    Write-Debug -Message $properties
+                
+                    $object = New-Object -TypeName PSObject -Property $properties
+                
+                    Write-Output $object
                 }
             } catch {
                 Write-Error "Unable to query wmiMonitorID on computer $computer.`n$($_.Exception.Message)"
